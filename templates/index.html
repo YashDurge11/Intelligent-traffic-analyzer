@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Intelligent Traffic Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #0b0f19; color: #e2e8f0; margin: 30px; }
+        .wrapper { max-width: 1000px; margin: 0 auto; }
+        h1 { text-align: center; color: #38bdf8; margin-bottom: 5px; }
+        p.subtitle { text-align: center; color: #64748b; margin-bottom: 40px; }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; }
+        .lane-card { background: #111827; border: 1px solid #1f2937; padding: 25px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s; }
+        .lane-info h3 { margin: 0 0 5px 0; font-size: 20px; color: #f8fafc; }
+        .count { font-size: 32px; font-weight: bold; color: #f59e0b; }
+        .light-indicator { width: 40px; height: 40px; border-radius: 50%; transition: background-color 0.2s; }
+        .RED { background-color: #ef4444; box-shadow: 0 0 20px #ef4444; }
+        .GREEN { background-color: #22c55e; box-shadow: 0 0 20px #22c55e; }
+        .congestion-alert { border-color: #ef4444; background: rgba(239, 68, 68, 0.05); }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <h1>🚦 Adaptive Traffic Surveillance Panel</h1>
+        <p class="subtitle">Real-time Intersection Density Computations via C++ System Core</p>
+        <div class="grid" id="intersection-grid"></div>
+    </div>
+
+    <script>
+        const grid = document.getElementById('intersection-grid');
+        const ws = new WebSocket('ws://localhost:18080/traffic-stream');
+
+        ws.onmessage = (event) => {
+            const lanes = JSON.parse(event.data);
+            grid.innerHTML = ''; 
+
+            lanes.forEach(lane => {
+                const isCongested = lane.vehicles > 9 ? 'congestion-alert' : '';
+                const cardHtml = `
+                    <div class="lane-card ${isCongested}">
+                        <div class="lane-info">
+                            <h3>${lane.lane}</h3>
+                            <div>Density: <span class="count">${lane.vehicles}</span> cars</div>
+                        </div>
+                        <div class="light-indicator ${lane.light}"></div>
+                    </div>
+                `;
+                grid.innerHTML += cardHtml;
+            });
+        };
+    </script>
+</body>
+</html>
